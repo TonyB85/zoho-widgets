@@ -13,32 +13,35 @@
       background: #f5f6f8;
       color: #26284A;
       min-height: 100vh;
-      padding: 16px;
+      padding: 20px 24px;
     }
 
+    /* ── Header ── */
     .header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
     .header-icon {
-      width: 32px; height: 32px;
+      width: 36px; height: 36px;
       background: #26284A;
-      border-radius: 6px;
+      border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
-    .header-title { font-size: 14px; font-weight: 600; color: #26284A; letter-spacing: 0.02em; }
-    .header-sub   { font-size: 11px; color: #8890a4; margin-top: 1px; }
+    .header-title { font-size: 15px; font-weight: 600; color: #26284A; }
+    .header-sub   { font-size: 11px; color: #8890a4; margin-top: 2px; }
 
+    /* ── States ── */
     .state {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      padding: 40px 20px; gap: 10px; text-align: center;
+      padding: 60px 20px; gap: 12px; text-align: center;
     }
     .state-label { font-size: 13px; color: #8890a4; }
     .spinner {
-      width: 28px; height: 28px;
+      width: 32px; height: 32px;
       border: 3px solid #e4e6ed;
       border-top-color: #FC664A;
       border-radius: 50%;
@@ -48,89 +51,175 @@
 
     .error-box {
       background: #fff5f3; border: 1px solid #ffd0c8;
-      border-radius: 8px; padding: 12px 14px;
+      border-radius: 8px; padding: 14px 16px;
       font-size: 12px; color: #c0392b;
-      white-space: pre-wrap; word-break: break-word;
-    }
-    .debug-box {
-      background: #f0f4ff; border: 1px solid #c8d4f0;
-      border-radius: 8px; padding: 10px 12px;
-      font-size: 11px; color: #26284A;
-      font-family: monospace;
-      white-space: pre-wrap; word-break: break-word;
-      margin-top: 10px;
     }
 
-    /* Tree */
-    .tree-wrapper { overflow-x: auto; padding-bottom: 8px; }
-    .tree { display: flex; flex-direction: column; align-items: center; min-width: fit-content; }
-
-    .level-row { display: flex; flex-direction: column; align-items: center; width: 100%; }
-    .level-label {
-      font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
-      text-transform: uppercase; color: #b0b5c8; margin-bottom: 6px;
-    }
-    .nodes-row {
-      display: flex; flex-direction: row;
-      align-items: flex-start; justify-content: center;
-      gap: 12px; flex-wrap: wrap;
+    /* ── Horizontal Tree Layout ── */
+    .tree-scroll {
+      overflow-x: auto;
+      overflow-y: visible;
+      padding-bottom: 8px;
     }
 
-    .connector { display: flex; align-items: center; justify-content: center; height: 24px; }
-    .connector-line { width: 2px; height: 100%; background: #d1d5e8; }
+    .tree-horizontal {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 0;
+      min-width: fit-content;
+      padding: 8px 0;
+    }
+
+    /* Each column = one tier */
+    .tier-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+    }
+
+    .tier-header {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #b0b5c8;
+      padding: 0 0 12px 4px;
+      white-space: nowrap;
+    }
+
+    .tier-nodes {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    /* Connector column between tiers */
+    .connector-col {
+      display: flex;
+      flex-direction: column;
+      padding-top: 34px; /* align with first node after header */
+      align-items: center;
+      width: 48px;
+      flex-shrink: 0;
+    }
+
+    /* SVG connectors drawn dynamically */
+    .connector-svg-wrap {
+      position: relative;
+      width: 48px;
+    }
+
+    /* ── Node Cards ── */
+    .node-wrap {
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
 
     .node-card {
-      background: #fff; border: 1.5px solid #e4e6ed;
-      border-radius: 10px; padding: 10px 14px;
-      min-width: 130px; max-width: 180px;
+      background: #fff;
+      border: 1.5px solid #e4e6ed;
+      border-radius: 12px;
+      padding: 12px 18px;
+      width: 220px;
       cursor: pointer;
       transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
       position: relative;
     }
     .node-card:hover {
       border-color: #FC664A;
-      box-shadow: 0 4px 16px rgba(252,102,74,0.12);
+      box-shadow: 0 4px 20px rgba(252,102,74,0.13);
       transform: translateY(-1px);
     }
-    .node-card.active { border-color: #26284A; box-shadow: 0 4px 20px rgba(38,40,74,0.13); }
+    .node-card.active {
+      border-color: #26284A;
+      box-shadow: 0 4px 20px rgba(38,40,74,0.15);
+    }
     .node-card.active::before {
       content: '';
-      position: absolute; top: -1.5px; left: -1.5px; right: -1.5px;
-      height: 3px; background: #FC664A; border-radius: 10px 10px 0 0;
+      position: absolute;
+      left: -1.5px; top: -1.5px; bottom: -1.5px;
+      width: 4px;
+      background: #FC664A;
+      border-radius: 12px 0 0 12px;
     }
 
-    .node-level-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 9px; font-weight: 600; letter-spacing: 0.07em;
-      text-transform: uppercase; padding: 2px 7px;
-      border-radius: 20px; margin-bottom: 6px;
+    .node-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+      margin-bottom: 7px;
     }
     .badge-group  { background: #eef0f8; color: #26284A; }
     .badge-entity { background: #e8f0fb; color: #2E4E79; }
     .badge-brand  { background: #fff0ed; color: #FC664A; }
     .badge-unknown{ background: #f0f0f0; color: #888; }
 
-    .node-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; vertical-align: middle; }
+    .node-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
     .dot-group  { background: #26284A; }
     .dot-entity { background: #2E4E79; }
     .dot-brand  { background: #FC664A; }
 
-    .node-name { font-size: 12px; font-weight: 600; color: #26284A; line-height: 1.3; word-break: break-word; }
-
-    .legend {
-      display: flex; gap: 14px; flex-wrap: wrap;
-      margin-top: 20px; padding-top: 14px;
-      border-top: 1px solid #e4e6ed;
+    .node-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #26284A;
+      line-height: 1.3;
+      word-break: break-word;
     }
-    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #8890a4; }
-    .legend-dot  { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── Connector lines ── */
+    .h-line {
+      height: 2px;
+      background: #d1d5e8;
+      flex: 1;
+    }
+    .connector-branch {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 48px;
+      position: relative;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #e4e6ed;
+      align-items: center;
+    }
+    .legend-item {
+      display: flex; align-items: center;
+      gap: 6px; font-size: 11px; color: #8890a4;
+    }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .legend-hint { margin-left: auto; font-size: 10px; color: #c0c5d4; }
   </style>
 </head>
 <body>
 
 <div class="header">
   <div class="header-icon">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="9" y="1" width="6" height="4" rx="1" fill="white"/>
       <rect x="1" y="10" width="6" height="4" rx="1" fill="white"/>
       <rect x="17" y="10" width="6" height="4" rx="1" fill="white"/>
@@ -147,22 +236,19 @@
   </div>
 </div>
 
-<div id="root"><div class="state"><div class="spinner"></div><div class="state-label">Initialising…</div></div></div>
+<div id="root">
+  <div class="state"><div class="spinner"></div><div class="state-label">Initialising…</div></div>
+</div>
 
 <script>
-// ── Config ──────────────────────────────────────────────────────
 const ACCOUNT_LEVEL_FIELD  = 'Account_Level';
 const PARENT_ACCOUNT_FIELD = 'Parent_Account';
 const ACCOUNT_NAME_FIELD   = 'Account_Name';
-const FIELDS_TO_FETCH      = [ACCOUNT_NAME_FIELD, ACCOUNT_LEVEL_FIELD, PARENT_ACCOUNT_FIELD].join(',');
 
-// ── Helpers ─────────────────────────────────────────────────────
 function setHTML(html) { document.getElementById('root').innerHTML = html; }
-function showError(msg, debug) {
-  setHTML(`<div class="error-box">⚠ ${msg}</div>${debug ? `<div class="debug-box">${JSON.stringify(debug, null, 2)}</div>` : ''}`);
-}
-function showLoading(msg) {
-  setHTML(`<div class="state"><div class="spinner"></div><div class="state-label">${msg}</div></div>`);
+
+function showError(msg) {
+  setHTML(`<div class="error-box">⚠ ${msg}</div>`);
 }
 
 function getLevel(val) {
@@ -172,21 +258,26 @@ function getLevel(val) {
   if (v === 'brand')  return 'brand';
   return 'unknown';
 }
-function badgeClass(l)  { return ({group:'badge-group', entity:'badge-entity', brand:'badge-brand'})[l] || 'badge-unknown'; }
-function dotClass(l)    { return ({group:'dot-group',   entity:'dot-entity',   brand:'dot-brand'})[l]   || ''; }
-function levelLabel(l)  { return ({group:'Group', entity:'Legal Entity', brand:'Brand', unknown:'Unknown'})[l] || l; }
+
+function badgeClass(l) { return ({group:'badge-group',entity:'badge-entity',brand:'badge-brand'})[l]||'badge-unknown'; }
+function dotClass(l)   { return ({group:'dot-group',entity:'dot-entity',brand:'dot-brand'})[l]||''; }
+function levelLabel(l) { return ({group:'Group',entity:'Legal Entity',brand:'Brand',unknown:'Unknown'})[l]||l; }
 
 function nodeCard(acct, currentId) {
   const level   = getLevel(acct[ACCOUNT_LEVEL_FIELD]);
   const name    = acct[ACCOUNT_NAME_FIELD] || acct.name || 'Unnamed';
   const isActive = acct.id === currentId;
   return `
-    <div class="node-card ${isActive ? 'active' : ''}" onclick="openRecord('${acct.id}')" title="Open ${name}">
-      <div class="node-level-badge ${badgeClass(level)}">
-        <span class="node-dot ${dotClass(level)}"></span>
-        ${levelLabel(level)}
+    <div class="node-wrap">
+      <div class="node-card ${isActive ? 'active' : ''}"
+           onclick="openRecord('${acct.id}')"
+           title="Open ${name}">
+        <div class="node-badge ${badgeClass(level)}">
+          <span class="node-dot ${dotClass(level)}"></span>
+          ${levelLabel(level)}
+        </div>
+        <div class="node-name">${name}</div>
       </div>
-      <div class="node-name">${name}</div>
     </div>`;
 }
 
@@ -194,14 +285,12 @@ function openRecord(id) {
   ZOHO.CRM.UI.Record.open({ Entity: 'Accounts', RecordID: id });
 }
 
-// ── API ─────────────────────────────────────────────────────────
 async function getRecord(id) {
   const resp = await ZOHO.CRM.API.getRecord({ Entity: 'Accounts', RecordID: id });
   if (!resp || !resp.data || !resp.data[0]) throw new Error('Record not found: ' + id);
   return resp.data[0];
 }
 
-// Use COQL which is most reliable inside widget context for searching by parent
 async function getChildAccounts(parentId) {
   const resp = await ZOHO.CRM.API.coql({
     select_query: `SELECT id, ${ACCOUNT_NAME_FIELD}, ${ACCOUNT_LEVEL_FIELD}, ${PARENT_ACCOUNT_FIELD} FROM Accounts WHERE ${PARENT_ACCOUNT_FIELD} = '${parentId}' LIMIT 20`
@@ -209,84 +298,149 @@ async function getChildAccounts(parentId) {
   return (resp && resp.data) ? resp.data : [];
 }
 
-// ── Build hierarchy ─────────────────────────────────────────────
 async function buildHierarchy(currentId) {
-  // Walk up to root
   let record = await getRecord(currentId);
   const seen = new Set([currentId]);
-
   while (record[PARENT_ACCOUNT_FIELD]) {
-    const parentRef = record[PARENT_ACCOUNT_FIELD];
-    const parentId  = parentRef.id || parentRef;
+    const parentId = record[PARENT_ACCOUNT_FIELD].id || record[PARENT_ACCOUNT_FIELD];
     if (seen.has(parentId)) break;
     seen.add(parentId);
-    const parent = await getRecord(parentId);
-    record = parent;
+    record = await getRecord(parentId);
   }
   const root = record;
-
-  // Children of root
   const tier2 = await getChildAccounts(root.id);
-
-  // Children of each tier2
   const tier3 = {};
   for (const t2 of tier2) {
     tier3[t2.id] = await getChildAccounts(t2.id);
   }
-
   return { root, tier2, tier3 };
 }
 
-// ── Render ──────────────────────────────────────────────────────
 function renderTree({ root, tier2, tier3 }, currentId) {
-  let html = '<div class="tree-wrapper"><div class="tree">';
+  const NODE_H    = 76;  // approx card height px
+  const NODE_GAP  = 12;  // gap between cards
+  const CONN_W    = 56;  // connector column width
 
-  // Root row
-  html += `<div class="level-row">
-    <div class="level-label">Group</div>
-    <div class="nodes-row">${nodeCard(root, currentId)}</div>
-  </div>`;
+  // Build HTML using a horizontal flex layout with SVG connectors
+  let html = '<div class="tree-scroll"><div style="display:flex;flex-direction:row;align-items:flex-start;padding:8px 0;">';
 
-  if (tier2.length > 0) {
-    html += `<div class="connector"><div class="connector-line"></div></div>`;
-    html += `<div class="level-row">
-      <div class="level-label">Legal Entities</div>
-      <div class="nodes-row">${tier2.map(e => nodeCard(e, currentId)).join('')}</div>
+  // ── Column 1: Group ──
+  html += `
+    <div class="tier-col">
+      <div class="tier-header">Group</div>
+      <div class="tier-nodes">
+        ${nodeCard(root, currentId)}
+      </div>
     </div>`;
 
+  if (tier2.length > 0) {
+    // ── Connector 1→2 ──
+    const totalBranches = tier2.length;
+    // We need an SVG that draws a line from the right of Group to the left of each Entity
+    // Calculate total height of entity column
+    const entityColH = totalBranches * NODE_H + (totalBranches - 1) * NODE_GAP;
+    const midY = NODE_H / 2;
+
+    let svgLines = '';
+    // Horizontal line from group card midpoint
+    svgLines += `<line x1="0" y1="${midY}" x2="${CONN_W/2}" y2="${midY}" stroke="#d1d5e8" stroke-width="2"/>`;
+    if (totalBranches > 1) {
+      // Vertical spine
+      const firstBranchY = midY;
+      const lastBranchY  = (NODE_H + NODE_GAP) * (totalBranches - 1) + midY;
+      svgLines += `<line x1="${CONN_W/2}" y1="${firstBranchY}" x2="${CONN_W/2}" y2="${lastBranchY}" stroke="#d1d5e8" stroke-width="2"/>`;
+    }
+    // Branch lines to each entity
+    for (let i = 0; i < totalBranches; i++) {
+      const branchY = (NODE_H + NODE_GAP) * i + midY;
+      svgLines += `<line x1="${CONN_W/2}" y1="${branchY}" x2="${CONN_W}" y2="${branchY}" stroke="#d1d5e8" stroke-width="2"/>`;
+    }
+
+    html += `
+      <div style="width:${CONN_W}px;padding-top:30px;flex-shrink:0;">
+        <svg width="${CONN_W}" height="${entityColH}" style="overflow:visible;">${svgLines}</svg>
+      </div>`;
+
+    // ── Column 2: Entities ──
+    html += `<div class="tier-col"><div class="tier-header">Legal Entities</div><div class="tier-nodes">`;
+    for (const entity of tier2) {
+      html += nodeCard(entity, currentId);
+    }
+    html += `</div></div>`;
+
+    // ── Check if any brands ──
     const allBrands = tier2.flatMap(e => tier3[e.id] || []);
     if (allBrands.length > 0) {
-      html += `<div class="connector"><div class="connector-line"></div></div>`;
-      html += `<div class="level-row">
-        <div class="level-label">Brands</div>
-        <div class="nodes-row">${allBrands.map(b => nodeCard(b, currentId)).join('')}</div>
-      </div>`;
+
+      // ── Connector 2→3 (one branch per entity→its brands) ──
+      // Calculate total height of brand column
+      const brandColH = allBrands.length * NODE_H + (allBrands.length - 1) * NODE_GAP;
+      let svgLines2 = '';
+      let brandOffset = 0;
+
+      for (let ei = 0; ei < tier2.length; ei++) {
+        const entity = tier2[ei];
+        const brands = tier3[entity.id] || [];
+        if (brands.length === 0) continue;
+
+        const entityMidY = (NODE_H + NODE_GAP) * ei + NODE_H / 2;
+
+        // Horizontal from entity
+        svgLines2 += `<line x1="0" y1="${entityMidY}" x2="${CONN_W/2}" y2="${entityMidY}" stroke="#d1d5e8" stroke-width="2"/>`;
+
+        const firstBrandY = (NODE_H + NODE_GAP) * brandOffset + NODE_H / 2;
+        const lastBrandY  = (NODE_H + NODE_GAP) * (brandOffset + brands.length - 1) + NODE_H / 2;
+
+        if (brands.length > 1) {
+          svgLines2 += `<line x1="${CONN_W/2}" y1="${Math.min(entityMidY, firstBrandY)}" x2="${CONN_W/2}" y2="${Math.max(entityMidY, lastBrandY)}" stroke="#d1d5e8" stroke-width="2"/>`;
+        } else {
+          // Single brand - just connect
+          svgLines2 += `<line x1="${CONN_W/2}" y1="${entityMidY}" x2="${CONN_W/2}" y2="${firstBrandY}" stroke="#d1d5e8" stroke-width="2"/>`;
+        }
+
+        for (let bi = 0; bi < brands.length; bi++) {
+          const brandY = (NODE_H + NODE_GAP) * (brandOffset + bi) + NODE_H / 2;
+          svgLines2 += `<line x1="${CONN_W/2}" y1="${brandY}" x2="${CONN_W}" y2="${brandY}" stroke="#d1d5e8" stroke-width="2"/>`;
+        }
+
+        brandOffset += brands.length;
+      }
+
+      const svgH = Math.max(entityColH, brandColH);
+      html += `
+        <div style="width:${CONN_W}px;padding-top:30px;flex-shrink:0;">
+          <svg width="${CONN_W}" height="${svgH}" style="overflow:visible;">${svgLines2}</svg>
+        </div>`;
+
+      // ── Column 3: Brands ──
+      html += `<div class="tier-col"><div class="tier-header">Brands</div><div class="tier-nodes">`;
+      for (const entity of tier2) {
+        for (const brand of (tier3[entity.id] || [])) {
+          html += nodeCard(brand, currentId);
+        }
+      }
+      html += `</div></div>`;
     }
   }
 
-  html += `</div></div>`;
+  html += `</div></div>`; // close flex row + scroll
+
+  // Legend
   html += `
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:#26284A"></div>Group</div>
       <div class="legend-item"><div class="legend-dot" style="background:#2E4E79"></div>Legal Entity</div>
       <div class="legend-item"><div class="legend-dot" style="background:#FC664A"></div>Brand</div>
-      <div class="legend-item" style="margin-left:auto;font-size:10px;color:#c0c5d4;">Click any node to open</div>
+      <div class="legend-hint">Click any node to open record</div>
     </div>`;
 
   setHTML(html);
 }
 
-// ── Entry ───────────────────────────────────────────────────────
 ZOHO.embeddedApp.on('PageLoad', async function(data) {
   try {
-    showLoading('Loading hierarchy…');
-
-    const currentId = (data && (data.EntityId || data.recordId || data.id));
-    if (!currentId) {
-      showError('No record ID received from CRM.', data);
-      return;
-    }
-
+    const currentId = data && (data.EntityId || data.recordId || data.id);
+    if (!currentId) { showError('No record ID received from CRM.'); return; }
     const hierarchy = await buildHierarchy(currentId);
     renderTree(hierarchy, currentId);
   } catch(e) {
