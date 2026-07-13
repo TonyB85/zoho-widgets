@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account Hierarchy Viewer</title>
+  <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f6f8;
+      color: #26284A;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .header-icon {
+      width: 32px; height: 32px;
+      background: #26284A;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header-title { font-size: 14px; font-weight: 600; color: #26284A; letter-spacing: 0.02em; }
+    .header-sub   { font-size: 11px; color: #8890a4; margin-top: 1px; }
+
+    .state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 20px; gap: 10px; text-align: center;
+    }
+    .state-label { font-size: 13px; color: #8890a4; }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid #e4e6ed;
+      border-top-color: #FC664A;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: #fff5f3; border: 1px solid #ffd0c8;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 12px; color: #c0392b;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .debug-box {
+      background: #f0f4ff; border: 1px solid #c8d4f0;
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 11px; color: #26284A;
+      font-family: monospace;
+      white-space: pre-wrap; word-break: break-word;
+      margin-top: 10px;
+    }
+
+    /* Tree */
+    .tree-wrapper { overflow-x: auto; padding-bottom: 8px; }
+    .tree { display: flex; flex-direction: column; align-items: center; min-width: fit-content; }
+
+    .level-row { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .level-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #b0b5c8; margin-bottom: 6px;
+    }
+    .nodes-row {
+      display: flex; flex-direction: row;
+      align-items: flex-start; justify-content: center;
+      gap: 12px; flex-wrap: wrap;
+    }
+
+    .connector { display: flex; align-items: center; justify-content: center; height: 24px; }
+    .connector-line { width: 2px; height: 100%; background: #d1d5e8; }
+
+    .node-card {
+      background: #fff; border: 1.5px solid #e4e6ed;
+      border-radius: 10px; padding: 10px 14px;
+      min-width: 130px; max-width: 180px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+      position: relative;
+    }
+    .node-card:hover {
+      border-color: #FC664A;
+      box-shadow: 0 4px 16px rgba(252,102,74,0.12);
+      transform: translateY(-1px);
+    }
+    .node-card.active { border-color: #26284A; box-shadow: 0 4px 20px rgba(38,40,74,0.13); }
+    .node-card.active::before {
+      content: '';
+      position: absolute; top: -1.5px; left: -1.5px; right: -1.5px;
+      height: 3px; background: #FC664A; border-radius: 10px 10px 0 0;
+    }
+
+    .node-level-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 9px; font-weight: 600; letter-spacing: 0.07em;
+      text-transform: uppercase; padding: 2px 7px;
+      border-radius: 20px; margin-bottom: 6px;
+    }
+    .badge-group  { background: #eef0f8; color: #26284A; }
+    .badge-entity { background: #e8f0fb; color: #2E4E79; }
+    .badge-brand  { background: #fff0ed; color: #FC664A; }
+    .badge-unknown{ background: #f0f0f0; color: #888; }
+
+    .node-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; vertical-align: middle; }
+    .dot-group  { background: #26284A; }
+    .dot-entity { background: #2E4E79; }
+    .dot-brand  { background: #FC664A; }
+
+    .node-name { font-size: 12px; font-weight: 600; color: #26284A; line-height: 1.3; word-break: break-word; }
+
+    .legend {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      margin-top: 20px; padding-top: 14px;
+      border-top: 1px solid #e4e6ed;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #8890a4; }
+    .legend-dot  { width: 8px; height: 8px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="9" y="1" width="6" height="4" rx="1" fill="white"/>
+      <rect x="1" y="10" width="6" height="4" rx="1" fill="white"/>
+      <rect x="17" y="10" width="6" height="4" rx="1" fill="white"/>
+      <rect x="9" y="19" width="6" height="4" rx="1" fill="white"/>
+      <line x1="12" y1="5" x2="12" y2="10" stroke="white" stroke-width="1.5"/>
+      <line x1="4" y1="10" x2="20" y2="10" stroke="white" stroke-width="1.5"/>
+      <line x1="4" y1="14" x2="4" y2="19" stroke="white" stroke-width="1.5"/>
+      <line x1="20" y1="14" x2="20" y2="19" stroke="white" stroke-width="1.5"/>
+    </svg>
+  </div>
+  <div>
+    <div class="header-title">Account Hierarchy</div>
+    <div class="header-sub">Group · Legal Entity · Brand</div>
+  </div>
+</div>
+
+<div id="root"><div class="state"><div class="spinner"></div><div class="state-label">Initialising…</div></div></div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────────
+const ACCOUNT_LEVEL_FIELD  = 'Account_Level';
+const PARENT_ACCOUNT_FIELD = 'Parent_Account';
+const ACCOUNT_NAME_FIELD   = 'Account_Name';
+const FIELDS_TO_FETCH      = [ACCOUNT_NAME_FIELD, ACCOUNT_LEVEL_FIELD, PARENT_ACCOUNT_FIELD].join(',');
+
+// ── Helpers ─────────────────────────────────────────────────────
+function setHTML(html) { document.getElementById('root').innerHTML = html; }
+function showError(msg, debug) {
+  setHTML(`<div class="error-box">⚠ ${msg}</div>${debug ? `<div class="debug-box">${JSON.stringify(debug, null, 2)}</div>` : ''}`);
+}
+function showLoading(msg) {
+  setHTML(`<div class="state"><div class="spinner"></div><div class="state-label">${msg}</div></div>`);
+}
+
+function getLevel(val) {
+  const v = ((val && (val.name || val)) || '').toString().toLowerCase().trim();
+  if (v === 'group')  return 'group';
+  if (v === 'entity') return 'entity';
+  if (v === 'brand')  return 'brand';
+  return 'unknown';
+}
+function badgeClass(l)  { return ({group:'badge-group', entity:'badge-entity', brand:'badge-brand'})[l] || 'badge-unknown'; }
+function dotClass(l)    { return ({group:'dot-group',   entity:'dot-entity',   brand:'dot-brand'})[l]   || ''; }
+function levelLabel(l)  { return ({group:'Group', entity:'Legal Entity', brand:'Brand', unknown:'Unknown'})[l] || l; }
+
+function nodeCard(acct, currentId) {
+  const level   = getLevel(acct[ACCOUNT_LEVEL_FIELD]);
+  const name    = acct[ACCOUNT_NAME_FIELD] || acct.name || 'Unnamed';
+  const isActive = acct.id === currentId;
+  return `
+    <div class="node-card ${isActive ? 'active' : ''}" onclick="openRecord('${acct.id}')" title="Open ${name}">
+      <div class="node-level-badge ${badgeClass(level)}">
+        <span class="node-dot ${dotClass(level)}"></span>
+        ${levelLabel(level)}
+      </div>
+      <div class="node-name">${name}</div>
+    </div>`;
+}
+
+function openRecord(id) {
+  ZOHO.CRM.UI.Record.open({ Entity: 'Accounts', RecordID: id });
+}
+
+// ── API ─────────────────────────────────────────────────────────
+async function getRecord(id) {
+  const resp = await ZOHO.CRM.API.getRecord({ Entity: 'Accounts', RecordID: id });
+  if (!resp || !resp.data || !resp.data[0]) throw new Error('Record not found: ' + id);
+  return resp.data[0];
+}
+
+// Use COQL which is most reliable inside widget context for searching by parent
+async function getChildAccounts(parentId) {
+  const resp = await ZOHO.CRM.API.coql({
+    select_query: `SELECT id, ${ACCOUNT_NAME_FIELD}, ${ACCOUNT_LEVEL_FIELD}, ${PARENT_ACCOUNT_FIELD} FROM Accounts WHERE ${PARENT_ACCOUNT_FIELD} = '${parentId}' LIMIT 20`
+  });
+  return (resp && resp.data) ? resp.data : [];
+}
+
+// ── Build hierarchy ─────────────────────────────────────────────
+async function buildHierarchy(currentId) {
+  // Walk up to root
+  let record = await getRecord(currentId);
+  const seen = new Set([currentId]);
+
+  while (record[PARENT_ACCOUNT_FIELD]) {
+    const parentRef = record[PARENT_ACCOUNT_FIELD];
+    const parentId  = parentRef.id || parentRef;
+    if (seen.has(parentId)) break;
+    seen.add(parentId);
+    const parent = await getRecord(parentId);
+    record = parent;
+  }
+  const root = record;
+
+  // Children of root
+  const tier2 = await getChildAccounts(root.id);
+
+  // Children of each tier2
+  const tier3 = {};
+  for (const t2 of tier2) {
+    tier3[t2.id] = await getChildAccounts(t2.id);
+  }
+
+  return { root, tier2, tier3 };
+}
+
+// ── Render ──────────────────────────────────────────────────────
+function renderTree({ root, tier2, tier3 }, currentId) {
+  let html = '<div class="tree-wrapper"><div class="tree">';
+
+  // Root row
+  html += `<div class="level-row">
+    <div class="level-label">Group</div>
+    <div class="nodes-row">${nodeCard(root, currentId)}</div>
+  </div>`;
+
+  if (tier2.length > 0) {
+    html += `<div class="connector"><div class="connector-line"></div></div>`;
+    html += `<div class="level-row">
+      <div class="level-label">Legal Entities</div>
+      <div class="nodes-row">${tier2.map(e => nodeCard(e, currentId)).join('')}</div>
+    </div>`;
+
+    const allBrands = tier2.flatMap(e => tier3[e.id] || []);
+    if (allBrands.length > 0) {
+      html += `<div class="connector"><div class="connector-line"></div></div>`;
+      html += `<div class="level-row">
+        <div class="level-label">Brands</div>
+        <div class="nodes-row">${allBrands.map(b => nodeCard(b, currentId)).join('')}</div>
+      </div>`;
+    }
+  }
+
+  html += `</div></div>`;
+  html += `
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#26284A"></div>Group</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2E4E79"></div>Legal Entity</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FC664A"></div>Brand</div>
+      <div class="legend-item" style="margin-left:auto;font-size:10px;color:#c0c5d4;">Click any node to open</div>
+    </div>`;
+
+  setHTML(html);
+}
+
+// ── Entry ───────────────────────────────────────────────────────
+ZOHO.embeddedApp.on('PageLoad', async function(data) {
+  try {
+    showLoading('Loading hierarchy…');
+
+    const currentId = (data && (data.EntityId || data.recordId || data.id));
+    if (!currentId) {
+      showError('No record ID received from CRM.', data);
+      return;
+    }
+
+    const hierarchy = await buildHierarchy(currentId);
+    renderTree(hierarchy, currentId);
+  } catch(e) {
+    showError('Could not load hierarchy: ' + (e.message || String(e)));
+  }
+});
+
+ZOHO.embeddedApp.init();
+</script>
+</body>
+</html>
